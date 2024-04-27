@@ -1,7 +1,9 @@
 package com.katzenklappe.smartHome.controller;
 
 
-import com.katzenklappe.smartHome.DTO.LightDTO;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.katzenklappe.smartHome.config.Secrets;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/light")
 
 public class LightController {
-    private static final String BEARER_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhbGwiLCJleHAiOjE3MTQzOTI3MjksImlhdCI6MTcxNDIxOTkyOSwiaXNzIjoiOTE0MTAwMDYwMzQyIiwianRpIjoiM2I5ODI1NTlmYmRiNGI2Yjk2NGFhY2FlZWJiMDk2NGQiLCJzdWIiOiJhZG1pbiIsInVzZXJfcGVybWlzc2lvbnMiOiJGRkZGRkZGRkZGRkZGRkZGIiwiZGV2aWNlIjoiOTE0MTAwMDYwMzQyIn0=.o7AtGe6zsBavhJyVzwvpSQsgam9MaNEIedE3ik8G5Vt007XVKJChEN0zf2AyL25Fp02p6nfE/4BZttxVaUW6inSQLzMnMcWSGuaQcY+TaUsQeeIOUjMSK+z9pYiC/woebz3FZaptc55RMrMWUupT+39bpNMM6IlWwlPlKpoEW44=";
+    private static final String BEARER_TOKEN = Secrets.BEARER_TOKEN;
     private final String baseURL = "http://192.168.178.73:8080";
 
     @RequestMapping("/hello")
@@ -47,30 +49,156 @@ public class LightController {
         }
     }
 
-    @PostMapping("/device/{id}/on")
-    public ResponseEntity <Object> turnLightOn(@PathVariable String id, @RequestBody LightDTO lightDTO){
+    @PostMapping("/device/{deviceID}/switchState")
+    public ResponseEntity <Object> turnLightOn(@PathVariable String deviceID){
+        String capabilityId = getCapabilitiesId(deviceID);
+        boolean isOn = getIsOn(deviceID);
+        boolean targetState = !isOn;
+        String template = """
+                {
+                    "type": "SetState",
+                    "namespace": "core.RWE",
+                    "target": "%s",
+                    "params": {
+                        "onState": {
+                            "type": "Constant",
+                            "value": %s
+                        }
+                    }
+                }""";
+
+        String reqBody = String.format(template, capabilityId, targetState);
+        return switchState(reqBody);
+    }
+
+    public boolean getIsOn(String deviceId){
+        String response = getState(deviceId).toString();
+
+        int startIndex = response.indexOf('{');
+        int endIndex = response.lastIndexOf('}');
+        String jsonResponse = response.substring(startIndex, endIndex + 1);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+            JsonNode stateNode = jsonNode.get("state");
+            JsonNode onStateNode = stateNode.get("onState");
+            JsonNode valueNode =  onStateNode.get("value");
+
+            if (valueNode != null){
+                String currentState = valueNode.toString();
+                if (currentState.equals("false")){
+                    return false;
+                }else if (currentState.equals("true")){
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+        System.out.println("Fehler beim Parsen des JSON: " + e.getMessage());
+    }
+        return false;
+    }
+
+    public ResponseEntity<Object> getState(String deviceId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + BEARER_TOKEN);
 
-        HttpEntity<String> entity =new HttpEntity<>(headers);
+        HttpEntity<Object> entity = new HttpEntity<>(headers);
+
+        String uri = baseURL + "/device/" + deviceId + "/capability/state";
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+            return ResponseEntity.ok().body(response.getBody());
+        } catch (HttpClientErrorException e){
+            // Handle client errors (4xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (HttpServerErrorException e){
+            // Handle server errors (5xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (Exception e){
+            // Handle other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    public String getCapabilitiesId(String deviceID){
+        String capability = getCapability(deviceID).toString();
+
+        int startIndex = capability.indexOf('{');
+        int endIndex = capability.lastIndexOf('}');
+
+        String capabiltyJSON = capability.substring(startIndex, endIndex + 1);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            JsonNode jsonNode = objectMapper.readTree(capabiltyJSON);
+
+            JsonNode capabilitiesNode = jsonNode.get("capabilities");
+
+            if (capabilitiesNode != null && capabilitiesNode.isArray()) {
+                String capabilityId = capabilitiesNode.get(0).asText();
+
+                return capabilityId;
+            } else {
+                System.out.println("Capabilities nicht gefunden oder kein Array.");
+            }
+        } catch (Exception e) {
+            System.out.println("Fehler beim Parsen des JSON: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public ResponseEntity <Object> getCapability(String deviceID){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+
+        HttpEntity<Object> entity = new HttpEntity<>(headers);
+
+        String uri = baseURL + "/device/" + deviceID;
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+            return ResponseEntity.ok().body(response.getBody());
+        } catch (HttpClientErrorException e){
+            // Handle client errors (4xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (HttpServerErrorException e){
+            // Handle server errors (5xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (Exception e){
+            // Handle other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity <Object> switchState(@RequestBody Object requestBody){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+
+        HttpEntity<Object> entity =new HttpEntity<>(requestBody, headers);
 
         String uri = baseURL + "/action";
         RestTemplate restTemplate = new RestTemplate();
 
-
-
-        return new ResponseEntity<>("Das hat geklappt", HttpStatus.OK);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+            return ResponseEntity.ok().body(response.getBody());
+        } catch (HttpClientErrorException e){
+            // Handle client errors (4xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (HttpServerErrorException e){
+            // Handle server errors (5xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (Exception e){
+            // Handle other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
-
-    /*
-    @GetMapping("/devices")
-    public String getAllDevices(){
-        String uri = "http://192.168.178.73:8080/device";
-        RestTemplate restTemplate = new RestTemplate();
-
-        String result = restTemplate.getForObject(uri, String.class);
-        return result;
-    }
-     */
 }
