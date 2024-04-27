@@ -47,30 +47,46 @@ public class LightController {
         }
     }
 
-    @PostMapping("/device/{id}/on")
-    public ResponseEntity <Object> turnLightOn(@PathVariable String id, @RequestBody LightDTO lightDTO){
+    @PostMapping("/device/on")
+    public ResponseEntity <Object> turnLightOn(){
+        String reqBody = """
+                {
+                    "type": "SetState",
+                    "namespace": "core.RWE",
+                    "target": "/capability/cbc79784424d442e9372c1e24f910ec1",
+                    "params": {
+                        "onState": {
+                            "type": "Constant",
+                            "value": false
+                        }
+                    }
+                }""";
+
+        return switchState(reqBody);
+    }
+
+    public ResponseEntity <Object> switchState(@RequestBody Object requestBody){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + BEARER_TOKEN);
 
-        HttpEntity<String> entity =new HttpEntity<>(headers);
+        HttpEntity<Object> entity =new HttpEntity<>(requestBody, headers);
 
         String uri = baseURL + "/action";
         RestTemplate restTemplate = new RestTemplate();
 
-
-
-        return new ResponseEntity<>("Das hat geklappt", HttpStatus.OK);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+            return ResponseEntity.ok().body(response.getBody());
+        } catch (HttpClientErrorException e){
+            // Handle client errors (4xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (HttpServerErrorException e){
+            // Handle server errors (5xx)
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }catch (Exception e){
+            // Handle other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
-
-    /*
-    @GetMapping("/devices")
-    public String getAllDevices(){
-        String uri = "http://192.168.178.73:8080/device";
-        RestTemplate restTemplate = new RestTemplate();
-
-        String result = restTemplate.getForObject(uri, String.class);
-        return result;
-    }
-     */
 }
