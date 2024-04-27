@@ -3,6 +3,7 @@ package com.katzenklappe.smartHome.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.katzenklappe.smartHome.config.Secrets;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/light")
 
 public class LightController {
-    private static final String BEARER_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhbGwiLCJleHAiOjE3MTQzOTI3MjksImlhdCI6MTcxNDIxOTkyOSwiaXNzIjoiOTE0MTAwMDYwMzQyIiwianRpIjoiM2I5ODI1NTlmYmRiNGI2Yjk2NGFhY2FlZWJiMDk2NGQiLCJzdWIiOiJhZG1pbiIsInVzZXJfcGVybWlzc2lvbnMiOiJGRkZGRkZGRkZGRkZGRkZGIiwiZGV2aWNlIjoiOTE0MTAwMDYwMzQyIn0=.o7AtGe6zsBavhJyVzwvpSQsgam9MaNEIedE3ik8G5Vt007XVKJChEN0zf2AyL25Fp02p6nfE/4BZttxVaUW6inSQLzMnMcWSGuaQcY+TaUsQeeIOUjMSK+z9pYiC/woebz3FZaptc55RMrMWUupT+39bpNMM6IlWwlPlKpoEW44=";
+    private static final String BEARER_TOKEN = Secrets.BEARER_TOKEN;
     private final String baseURL = "http://192.168.178.73:8080";
 
     @RequestMapping("/hello")
