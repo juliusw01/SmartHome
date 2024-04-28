@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Controller
 @RestController
 @RequestMapping("/light")
+@CrossOrigin(origins = "http://localhost:8081")
 
 public class LightController {
     private static final String BEARER_TOKEN = Secrets.BEARER_TOKEN;
