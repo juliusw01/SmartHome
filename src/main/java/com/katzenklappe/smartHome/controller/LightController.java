@@ -3,7 +3,6 @@ package com.katzenklappe.smartHome.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.katzenklappe.smartHome.config.Secrets;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 @CrossOrigin(origins = "http://localhost:8081")
 
 public class LightController {
-    private static final String BEARER_TOKEN = Secrets.BEARER_TOKEN;
     private final String baseURL = "http://192.168.178.73:8080";
 
     @RequestMapping("/hello")
@@ -28,7 +26,7 @@ public class LightController {
     public ResponseEntity <Object> getAllDevices(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -103,7 +101,7 @@ public class LightController {
     public ResponseEntity<Object> getState(String deviceId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -156,7 +154,7 @@ public class LightController {
     public ResponseEntity <Object> getCapability(String deviceID){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -181,7 +179,7 @@ public class LightController {
     public ResponseEntity <Object> switchState(@RequestBody Object requestBody){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + BEARER_TOKEN);
+        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
 
         HttpEntity<Object> entity =new HttpEntity<>(requestBody, headers);
 
