@@ -19,8 +19,8 @@ import java.time.LocalTime;
 
 @Controller
 @RestController
-@RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:8081")
+//@RequestMapping("/auth")
+//@CrossOrigin(origins = "http://localhost:8081")
 public class AuthController {
     private static final String URL = "http://192.168.178.73:8080/auth/token";
 
