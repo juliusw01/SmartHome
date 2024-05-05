@@ -2,20 +2,21 @@ package com.katzenklappe.smartHome.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.katzenklappe.smartHome.config.BearerToken;
+import com.katzenklappe.smartHome.Entities.Bearer;
 import com.katzenklappe.smartHome.config.Secrets;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import org.json.simple.JSONObject;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Controller
 @RestController
@@ -24,22 +25,22 @@ import java.time.LocalTime;
 public class AuthController {
     private static final String URL = "http://192.168.178.73:8080/auth/token";
 
-    public static String getBearerToken(){
-        String bearerToken = BearerToken.getBearerToken();
-        if (BearerToken.getExpirationDate() == null || !LocalDateTime.now().isBefore(BearerToken.getExpirationDate()) || bearerToken == null){
-            String bearerJson = generateNewBearerToken().toString();
-            BearerToken.setExpirationDate(LocalDateTime.now().plusHours(44));
-            bearerToken = retractBearerFromJson(bearerJson);
-            BearerToken.setBearerToken(bearerToken);
-            System.out.println("New Bearer Token generated: " + BearerToken.getBearerToken());
-            System.out.println("Bearer Token has expiration date of: " + BearerToken.getExpirationDate());
-        }
+    //private static Bearer bearer = new Bearer("",LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(11));
 
-        return bearerToken;
+    //TODO: check Bearer Token from JSON file
+    public static String checkBearerToken(){
+        //String bearerToken = BearerToken.getBearerToken();
+        if (Bearer.getExpirationDate() == null || !LocalDateTime.now().isBefore(Bearer.getExpirationDate()) || Bearer.getToken() == null){
+            generateNewBearerToken();
+            System.out.println("New Bearer Token generated: " + Bearer.getToken());
+            System.out.println("Bearer Token has expiration date of: " + Bearer.getExpirationDate());
+        }
+        System.out.println("Token is still valid");
+        return Bearer.getToken();
     }
 
     @PostMapping()
-    private static ResponseEntity<String> generateNewBearerToken(){
+    private static void generateNewBearerToken(){
         String username = Secrets.getUSERNAME();
         String password = Secrets.getPASSWORD();
         HttpHeaders headers = new HttpHeaders();
@@ -53,20 +54,35 @@ public class AuthController {
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.POST, entity, String.class);
-            return ResponseEntity.ok().body(response.getBody());
+            Bearer.setExpirationDate(LocalDateTime.now().plusHours(44));
+            String token = retractTokenFromJson(response.toString());
+            Bearer.setToken(token);
+            Bearer.setCreationDate(LocalDateTime.now());
+
+            JSONObject json = new JSONObject();
+
+            json.put("token", Bearer.getToken());
+            json.put("expirationDate", Bearer.getExpirationDate().toString());
+            json.put("creationDate", Bearer.getCreationDate().toString());
+
+            FileWriter fileWriter = new FileWriter("BearerToken.json", false);
+            fileWriter.write(json.toJSONString());
+            fileWriter.close();
+
+            ResponseEntity.ok().body(response.getBody());
         }catch (HttpClientErrorException e){
             // Handle client errors (4xx)
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         }catch (HttpServerErrorException e){
             // Handle server errors (5xx)
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         }catch (Exception e){
             // Handle other exceptions
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    private static String retractBearerFromJson(String bearerJson){
+    private static String retractTokenFromJson(String bearerJson){
         int startIndex = bearerJson.indexOf('{');
         int endIndex = bearerJson.lastIndexOf('}');
 
@@ -82,5 +98,17 @@ public class AuthController {
         }
 
         return null;
+    }
+
+    public static void saveBearerInJson(Bearer bearer) throws IOException {
+        JSONObject json = new JSONObject();
+
+        json.put("token", bearer.getToken());
+        json.put("expirationDate", bearer.getExpirationDate().toString());
+        json.put("creationDate", bearer.getCreationDate().toString());
+
+        FileWriter fileWriter = new FileWriter("BearerToken.json", false);
+        fileWriter.write(json.toJSONString());
+        fileWriter.close();
     }
 }

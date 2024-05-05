@@ -26,7 +26,7 @@ public class LightController {
     public ResponseEntity <Object> getAllDevices(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
+        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -101,7 +101,7 @@ public class LightController {
     public ResponseEntity<Object> getState(String deviceId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
+        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -154,7 +154,7 @@ public class LightController {
     public ResponseEntity <Object> getCapability(String deviceID){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
+        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -179,7 +179,7 @@ public class LightController {
     public ResponseEntity <Object> switchState(@RequestBody Object requestBody){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.getBearerToken());
+        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
 
         HttpEntity<Object> entity =new HttpEntity<>(requestBody, headers);
 
