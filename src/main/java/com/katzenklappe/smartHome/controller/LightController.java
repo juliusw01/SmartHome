@@ -12,10 +12,16 @@ import org.springframework.web.client.RestTemplate;
 @Controller
 @RestController
 @RequestMapping("/light")
-@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "http://localhost:8081")
 
 public class LightController {
     private final String baseURL = "http://192.168.178.73:8080";
+
+    private AuthController bearer;
+
+    public LightController(AuthController bearer) {
+        this.bearer = bearer;
+    }
 
     @RequestMapping("/hello")
     public String hello(){
@@ -26,7 +32,7 @@ public class LightController {
     public ResponseEntity <Object> getAllDevices(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
+        headers.set("Authorization", "Bearer " + bearer.checkBearerToken());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -101,7 +107,7 @@ public class LightController {
     public ResponseEntity<Object> getState(String deviceId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
+        headers.set("Authorization", "Bearer " + bearer.checkBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -154,7 +160,7 @@ public class LightController {
     public ResponseEntity <Object> getCapability(String deviceID){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
+        headers.set("Authorization", "Bearer " + bearer.checkBearerToken());
 
         HttpEntity<Object> entity = new HttpEntity<>(headers);
 
@@ -179,7 +185,7 @@ public class LightController {
     public ResponseEntity <Object> switchState(@RequestBody Object requestBody){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + AuthController.checkBearerToken());
+        headers.set("Authorization", "Bearer " + bearer.checkBearerToken());
 
         HttpEntity<Object> entity =new HttpEntity<>(requestBody, headers);
 

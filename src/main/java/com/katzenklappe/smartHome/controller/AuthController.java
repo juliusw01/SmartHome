@@ -3,7 +3,9 @@ package com.katzenklappe.smartHome.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.katzenklappe.smartHome.Entities.Bearer;
+import com.katzenklappe.smartHome.Repository.BearerRepo;
 import com.katzenklappe.smartHome.config.Secrets;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,30 +19,53 @@ import org.json.simple.JSONObject;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RestController
 //@RequestMapping("/auth")
 //@CrossOrigin(origins = "http://localhost:8081")
 public class AuthController {
+
+    @Autowired
+    BearerRepo bearerRepo;
+
     private static final String URL = "http://192.168.178.73:8080/auth/token";
+
 
     //private static Bearer bearer = new Bearer("",LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(11));
 
-    //TODO: check Bearer Token from JSON file
-    public static String checkBearerToken(){
+    //TODO: check Bearer Token from JSON file#
+
+    @PostMapping
+    public String checkBearerToken(){
         //String bearerToken = BearerToken.getBearerToken();
-        if (Bearer.getExpirationDate() == null || !LocalDateTime.now().isBefore(Bearer.getExpirationDate()) || Bearer.getToken() == null){
-            generateNewBearerToken();
-            System.out.println("New Bearer Token generated: " + Bearer.getToken());
-            System.out.println("Bearer Token has expiration date of: " + Bearer.getExpirationDate());
+        if (Bearer.exists){
+            List<Bearer> bearerList = bearerRepo.findAll();
+            Bearer currentBearer = bearerList.get(0);
+            if (currentBearer.getExpirationDate() == null || !LocalDateTime.now().isBefore(currentBearer.getExpirationDate()) || currentBearer.getToken() == null){
+                Bearer newBearer = generateNewBearerToken();
+                assert newBearer != null : "Bearer Token is null";
+                bearerRepo.save(newBearer);
+                return newBearer.getToken();
+            }else {
+                return currentBearer.getToken();
+            }
+        }else {
+            Bearer newBearer = generateNewBearerToken();
+            assert newBearer != null : "Bearer Token is null";
+            bearerRepo.save(newBearer);
+            return newBearer.getToken();
         }
-        System.out.println("Token is still valid");
-        return Bearer.getToken();
+
     }
 
-    @PostMapping()
-    private static void generateNewBearerToken(){
+    private Bearer generateNewBearerToken(){
+        if (Bearer.exists){
+            bearerRepo.deleteAll();
+        }
+        Bearer newBearer = new Bearer();
         String username = Secrets.getUSERNAME();
         String password = Secrets.getPASSWORD();
         HttpHeaders headers = new HttpHeaders();
@@ -54,22 +79,20 @@ public class AuthController {
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.POST, entity, String.class);
-            Bearer.setExpirationDate(LocalDateTime.now().plusHours(44));
+
+            newBearer.setExpirationDate(LocalDateTime.now().plusHours(44));
             String token = retractTokenFromJson(response.toString());
-            Bearer.setToken(token);
-            Bearer.setCreationDate(LocalDateTime.now());
+            newBearer.setToken(token);
+            newBearer.setCreationDate(LocalDateTime.now());
 
-            JSONObject json = new JSONObject();
-
-            json.put("token", Bearer.getToken());
-            json.put("expirationDate", Bearer.getExpirationDate().toString());
-            json.put("creationDate", Bearer.getCreationDate().toString());
-
-            FileWriter fileWriter = new FileWriter("BearerToken.json", false);
-            fileWriter.write(json.toJSONString());
-            fileWriter.close();
-
+            System.out.println(newBearer.getToken());
+            //bearerRepo.save(newBearer);
+            System.out.println(Bearer.exists);
+            Bearer.exists = true;
             ResponseEntity.ok().body(response.getBody());
+            System.out.println("generateNewBearerToken: " + newBearer.getToken());
+            return newBearer;
+
         }catch (HttpClientErrorException e){
             // Handle client errors (4xx)
             ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
@@ -80,9 +103,10 @@ public class AuthController {
             // Handle other exceptions
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+        return null;
     }
 
-    private static String retractTokenFromJson(String bearerJson){
+    private String retractTokenFromJson(String bearerJson){
         int startIndex = bearerJson.indexOf('{');
         int endIndex = bearerJson.lastIndexOf('}');
 
@@ -100,6 +124,7 @@ public class AuthController {
         return null;
     }
 
+    /*
     public static void saveBearerInJson(Bearer bearer) throws IOException {
         JSONObject json = new JSONObject();
 
@@ -111,4 +136,5 @@ public class AuthController {
         fileWriter.write(json.toJSONString());
         fileWriter.close();
     }
+     */
 }

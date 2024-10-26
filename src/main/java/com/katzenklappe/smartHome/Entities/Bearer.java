@@ -1,40 +1,52 @@
 package com.katzenklappe.smartHome.Entities;
 
+import jakarta.persistence.*;
+
 import java.lang.annotation.Documented;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-
+@Entity
 public class Bearer {
 
-    private static String token;
-    private static LocalDateTime expirationDate;
-    private static LocalDateTime creationDate;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+    @Lob
+    private String token;
+    private LocalDateTime expirationDate;
+    private LocalDateTime creationDate;
 
-    //private String refreshToken; TODO: extract refresh Token from and use it instead of always generating new Bearer Tokens
+    public static boolean exists = false;
+
+    //private String refreshToken; TODO: extract refresh Token from JSON and use it instead of always generating new Bearer Tokens
 
 
-    public static String getToken() {
+    public String getToken() {
         return token;
     }
 
-    public static void setToken(String token) {
-        Bearer.token = token;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    public static LocalDateTime getExpirationDate() {
+    public LocalDateTime getExpirationDate() {
         return expirationDate;
     }
 
-    public static void setExpirationDate(LocalDateTime expirationDate) {
-        Bearer.expirationDate = expirationDate;
+    public void setExpirationDate(LocalDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
-    public static LocalDateTime getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public static void setCreationDate(LocalDateTime creationDate) {
-        Bearer.creationDate = creationDate;
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 
+    public UUID getId() {
+        return id;
+    }
 }
