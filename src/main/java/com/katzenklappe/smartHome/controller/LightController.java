@@ -23,11 +23,6 @@ public class LightController {
         this.bearer = bearer;
     }
 
-    @RequestMapping("/hello")
-    public String hello(){
-        return "HelloWorld";
-    }
-
     @GetMapping("/devices")
     public ResponseEntity <Object> getAllDevices(){
         HttpHeaders headers = new HttpHeaders();
@@ -56,6 +51,7 @@ public class LightController {
 
     @PostMapping("/device/{deviceID}/switchState")
     public ResponseEntity <Object> turnLightOn(@PathVariable String deviceID){
+        System.out.println("Device: " + deviceID);
         String capabilityId = getCapabilitiesId(deviceID);
         boolean isOn = getIsOn(deviceID);
         boolean targetState = !isOn;
@@ -206,4 +202,42 @@ public class LightController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    //######################################################
+
+    private static boolean isOnVacation = false;
+
+    //This method is supposed to simulate a person living in the apartment by randomly turning devices on/off
+    /*@PostMapping("/on")
+    public ResponseEntity<Object> noOneHome(){
+        isOnVacation = true;
+        randomLightSwitch();
+        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+    }
+
+    public void randomLightSwitch(){
+        int i = 0;
+        while (true){
+            System.out.println("Vacation mode: " + isOnVacation);
+            System.out.println(i++);
+            if (isOnVacation){
+                switchState("12310fa9d1604f89b7ae363466f98c5c");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }else{
+                break;
+            }
+        }
+    }
+
+    @PostMapping("off")
+    public ResponseEntity<Object> backHome(){
+        isOnVacation = false;
+        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+    }
+
+     */
 }

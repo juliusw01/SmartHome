@@ -14,13 +14,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import org.json.simple.JSONObject;
-
-import java.io.FileWriter;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Controller
 @RestController
@@ -32,11 +27,6 @@ public class AuthController {
     BearerRepo bearerRepo;
 
     private static final String URL = "http://192.168.178.73:8080/auth/token";
-
-
-    //private static Bearer bearer = new Bearer("",LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(11));
-
-    //TODO: check Bearer Token from JSON file#
 
     @PostMapping
     public String checkBearerToken(){
@@ -124,17 +114,4 @@ public class AuthController {
         return null;
     }
 
-    /*
-    public static void saveBearerInJson(Bearer bearer) throws IOException {
-        JSONObject json = new JSONObject();
-
-        json.put("token", bearer.getToken());
-        json.put("expirationDate", bearer.getExpirationDate().toString());
-        json.put("creationDate", bearer.getCreationDate().toString());
-
-        FileWriter fileWriter = new FileWriter("BearerToken.json", false);
-        fileWriter.write(json.toJSONString());
-        fileWriter.close();
-    }
-     */
 }
