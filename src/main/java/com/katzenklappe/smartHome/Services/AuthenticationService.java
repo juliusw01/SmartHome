@@ -1,5 +1,7 @@
-package com.katzenklappe.smartHome.config;
+package com.katzenklappe.smartHome.Services;
 
+import com.katzenklappe.smartHome.config.ApiKeyAuthentication;
+import com.katzenklappe.smartHome.config.Secrets;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;

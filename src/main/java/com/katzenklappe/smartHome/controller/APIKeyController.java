@@ -14,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+import static com.katzenklappe.smartHome.Services.HashService.hashString;
+
 @Controller
 @RequestMapping("/auth/apikey")
 public class APIKeyController {
@@ -31,20 +33,6 @@ public class APIKeyController {
         apiKeyRepo.save(new APIKey(hash));
 
         return new ResponseEntity<>(key, HttpStatus.CREATED);
-    }
-
-    private static String hashString(String input){
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(input.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes){
-                hexString.append(String.format("%02x", b));
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
