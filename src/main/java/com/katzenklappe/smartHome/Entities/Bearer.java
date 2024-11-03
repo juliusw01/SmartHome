@@ -19,9 +19,6 @@ public class Bearer {
 
     public static boolean exists = false;
 
-    //private String refreshToken; TODO: extract refresh Token from JSON and use it instead of always generating new Bearer Tokens
-
-
     public String getToken() {
         return token;
     }

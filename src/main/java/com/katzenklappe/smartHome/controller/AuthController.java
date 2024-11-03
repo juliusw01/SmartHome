@@ -74,13 +74,8 @@ public class AuthController {
             String token = retractTokenFromJson(response.toString());
             newBearer.setToken(token);
             newBearer.setCreationDate(LocalDateTime.now());
-
-            System.out.println(newBearer.getToken());
-            //bearerRepo.save(newBearer);
-            System.out.println(Bearer.exists);
             Bearer.exists = true;
             ResponseEntity.ok().body(response.getBody());
-            System.out.println("generateNewBearerToken: " + newBearer.getToken());
             return newBearer;
 
         }catch (HttpClientErrorException e){
