@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 public class LightController {
     private final String baseURL = "http://192.168.178.73:8080";
+    //TODO: find baseUrl by trying 'ping smarthome01', 'ping smarthome02', etc.
 
     private AuthController bearer;
 

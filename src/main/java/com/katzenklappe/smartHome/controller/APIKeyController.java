@@ -29,7 +29,6 @@ public class APIKeyController {
         new SecureRandom().nextBytes(random);
         String key = Base64.getEncoder().encodeToString(random);
         String hash = hashString(key);
-        System.out.println("API Key hash: " + hash);
         apiKeyRepo.save(new APIKey(hash));
 
         return new ResponseEntity<>(key, HttpStatus.CREATED);
