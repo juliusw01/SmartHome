@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.katzenklappe.smartHome.Entities.Bearer;
 import com.katzenklappe.smartHome.Repository.BearerRepo;
 import com.katzenklappe.smartHome.config.Secrets;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Controller
 @RestController
+@Slf4j
 //@RequestMapping("/auth")
 //@CrossOrigin(origins = "http://localhost:8081")
 public class AuthController {
@@ -52,6 +54,7 @@ public class AuthController {
     }
 
     private Bearer generateNewBearerToken(){
+        log.info("Generating new Bearer Token");
         if (Bearer.exists){
             bearerRepo.deleteAll();
         }

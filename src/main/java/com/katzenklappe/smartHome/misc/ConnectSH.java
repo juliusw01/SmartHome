@@ -1,8 +1,11 @@
 package com.katzenklappe.smartHome.misc;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+@Slf4j
 public class ConnectSH {
     public static String findConection() throws UnknownHostException{
         String sh = "smarthome0";
@@ -11,7 +14,7 @@ public class ConnectSH {
                 String host = sh + i;
                 InetAddress shConnection = InetAddress.getByName(host);
                 if (shConnection.isReachable(10000)) {
-                    System.out.println("Found smart home device at " + shConnection.getHostAddress());
+                    log.info("Found smart home device at " + shConnection.getHostAddress());
                     return shConnection.getHostAddress();
                 }
             } catch (UnknownHostException e) {
