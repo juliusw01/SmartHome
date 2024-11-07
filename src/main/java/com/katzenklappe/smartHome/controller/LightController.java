@@ -3,12 +3,16 @@ package com.katzenklappe.smartHome.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.katzenklappe.smartHome.misc.ConnectSH;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.UnknownHostException;
+
 @Controller
 @RestController
 @RequestMapping("/light")
@@ -16,11 +20,12 @@ import org.springframework.web.client.RestTemplate;
 
 public class LightController {
     private final String baseURL = "http://192.168.178.73:8080";
+    //private final String baseURL = "http://" + ConnectSH.findConection() + ":8080";
     //TODO: find baseUrl by trying 'ping smarthome01', 'ping smarthome02', etc.
 
     private AuthController bearer;
 
-    public LightController(AuthController bearer) {
+    public LightController(AuthController bearer) throws UnknownHostException {
         this.bearer = bearer;
     }
 
