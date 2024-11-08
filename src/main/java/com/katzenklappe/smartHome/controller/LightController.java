@@ -19,8 +19,8 @@ import java.net.UnknownHostException;
 @RequestMapping("/light")
 @Slf4j
 public class LightController {
-    private final String baseURL = "http://192.168.178.73:8080";
-    //private final String baseURL = "http://" + ConnectSH.findConection() + ":8080";
+    //private final String baseURL = "http://192.168.178.73:8080";
+    private final String baseURL = "http://" + ConnectSH.findConection() + ":8080";
     //TODO: the ip address can only be found dynamically when running in local (not e.g. docker)
 
     private AuthController bearer;

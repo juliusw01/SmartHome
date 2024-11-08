@@ -13,16 +13,16 @@ public class ConnectSH {
             try {
                 String host = sh + i;
                 InetAddress shConnection = InetAddress.getByName(host);
+                log.info("Host: " + InetAddress.getByName(host));
                 if (shConnection.isReachable(10000)) {
                     log.info("Found smart home device at " + shConnection.getHostAddress());
                     return shConnection.getHostAddress();
                 }
-            } catch (UnknownHostException e) {
-                e.getMessage();
             } catch (Exception e) {
-                e.getMessage();
+                log.warn(e.getMessage());
             }
         }
+        log.error("No smart home device detected");
         throw new UnknownHostException("Smart Home device could not be found");
     }
 }
