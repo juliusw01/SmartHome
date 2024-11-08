@@ -2,6 +2,7 @@ package com.katzenklappe.smartHome.controller;
 
 import com.katzenklappe.smartHome.Entities.APIKey;
 import com.katzenklappe.smartHome.Repository.APIKeyRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import static com.katzenklappe.smartHome.Services.HashService.hashString;
 
 @Controller
 @RequestMapping("/auth/apikey")
+@Slf4j
 public class APIKeyController {
 
     @Autowired
@@ -30,6 +32,7 @@ public class APIKeyController {
         String key = Base64.getEncoder().encodeToString(random);
         String hash = hashString(key);
         apiKeyRepo.save(new APIKey(hash));
+        log.info("New API Key created");
 
         return new ResponseEntity<>(key, HttpStatus.CREATED);
     }
