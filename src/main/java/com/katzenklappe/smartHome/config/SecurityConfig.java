@@ -1,5 +1,6 @@
 package com.katzenklappe.smartHome.config;
 
+import com.katzenklappe.smartHome.Services.AuthenticationFilter;
 import com.katzenklappe.smartHome.Services.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

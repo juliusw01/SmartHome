@@ -1,6 +1,7 @@
-package com.katzenklappe.smartHome.config;
+package com.katzenklappe.smartHome.Services;
 
 import com.katzenklappe.smartHome.Services.AuthenticationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @Service
+@Slf4j
 public class AuthenticationFilter extends GenericFilterBean {
     private final AuthenticationService authenticationService;
 
@@ -32,6 +34,7 @@ public class AuthenticationFilter extends GenericFilterBean {
             Authentication authentication = authenticationService.getAuthentication((HttpServletRequest) request);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception exp) {
+            log.info("Request from " + request.getRemoteAddr() + " with invalid API Key: Access denied");
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
