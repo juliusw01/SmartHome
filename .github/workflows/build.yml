@@ -18,9 +18,9 @@ jobs:
           tree
           cd smarthome
           touch secrets.properties
-          echo ${{ secrets.USERNAME }} >> secrets.properties
-          echo ${{ secrets.PASSWORD }} >> secrets.properties
-          echo ${{ secrets.AUTH_TOKEN }} >> secrets.properties
+          echo "USERNAME=${{ secrets.USERNAME }}" >> secrets.properties
+          echo "PASSWORD=${{ secrets.PASSWORD }}" >> secrets.properties
+          echo "AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}" >> secrets.properties
           ls -l
 
       - name: Build images
