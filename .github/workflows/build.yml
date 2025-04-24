@@ -13,12 +13,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Build module1 image
+      - name: Build smarthome image
         run: |
-          docker build -t smarthome:latest ./smarthome
+          docker build -t smarthome:latest ./smartHome
           docker save smarthome:latest -o smarthome.tar
 
-      - name: Build module2 image
-        run: |
-          docker build -t module2:latest ./module2
-          docker save module2:latest -o module2.tar
