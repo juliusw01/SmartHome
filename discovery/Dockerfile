@@ -6,6 +6,5 @@ RUN mvn package -DskipTests
 
 FROM openjdk:21
 COPY --from=build /app/target/*.jar app.jar
-COPY secrets.properties secrets.properties
-EXPOSE 8008
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "/app.jar"]

@@ -23,8 +23,13 @@ jobs:
           echo ${{ secrets.AUTH_TOKEN }} >> secrets.properties
           ls -l
 
-      - name: Build smarthome image
+      - name: Build images
         run: |
-          docker build -t smarthome:latest ./smartHome
-          docker save smarthome:latest -o smarthome.tar
+          for module in smartHome Config Discovery Gateway; do
+            cd $module
+            mvn clean package -DskipTests
+            docker build -t $module:latest .
+            docker save $module:latest -o ../$module.tar
+            cd ..
+          done
 
