@@ -25,7 +25,7 @@ jobs:
 
       - name: Build images
         run: |
-          for module in smarthome Config Discovery Gateway; do
+          for module in smarthome config discovery gateway; do
             cd $module
             mvn clean package -DskipTests
             docker build -t $module:latest .
