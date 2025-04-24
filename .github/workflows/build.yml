@@ -1,10 +1,23 @@
-name: Build container Images
+name: Deploy Multi-Module Docker Setup to Raspberry Pi
 
 on:
   push:
-    branches: [master]
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Build module1 image
+        run: |
+          docker build -t smarthome:latest ./smarthome
+          docker save smarthome:latest -o smarthome.tar
+
+      - name: Build module2 image
+        run: |
+          docker build -t module2:latest ./module2
+          docker save module2:latest -o module2.tar

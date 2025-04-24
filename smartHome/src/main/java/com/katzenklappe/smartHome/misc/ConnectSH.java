@@ -19,7 +19,7 @@ public class ConnectSH {
                     return shConnection.getHostAddress();
                 }
             } catch (Exception e) {
-                log.warn(e.getMessage());
+                log.info(e.getMessage());
             }
         }
         log.error("No smart home device detected");
