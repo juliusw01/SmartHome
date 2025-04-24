@@ -16,7 +16,7 @@ jobs:
       - name: Copy secrets
         run: |
           tree
-          cd smartHome
+          cd smarthome
           touch secrets.properties
           echo ${{ secrets.USERNAME }} >> secrets.properties
           echo ${{ secrets.PASSWORD }} >> secrets.properties
