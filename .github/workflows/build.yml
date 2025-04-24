@@ -16,10 +16,12 @@ jobs:
       - name: Copy secrets
         run: |
           tree
+          cd smartHome
           touch secrets.properties
           echo ${{ secrets.USERNAME }} >> secrets.properties
           echo ${{ secrets.PASSWORD }} >> secrets.properties
           echo ${{ secrets.AUTH_TOKEN }} >> secrets.properties
+          ls -l
 
       - name: Build smarthome image
         run: |
