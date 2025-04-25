@@ -7,5 +7,8 @@ RUN mvn package -DskipTests
 FROM openjdk:21
 COPY --from=build /app/target/*.jar app.jar
 COPY secrets.properties secrets.properties
+COPY ../wait-for-it.sh wait-for-it.sh
+
+RUN chmod +x wait-for-it.sh
 EXPOSE 8008
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["./wait-for-it.sh", "api_gateway:8080", "--", "java", "-jar", "app.jar"]
