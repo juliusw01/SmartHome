@@ -33,29 +33,22 @@ jobs:
             docker save $module:latest -o ../$module.tar
             cd ..
           done
-          
 
-      - name: Copy images to Raspberry Pi
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.PI_HOST }}
-          username: ${{ secrets.PI_USER }}
-          key: ${{ secrets.PI_SSH_KEY }}
-          source: "smarthome.tar,gateway.tar,discovery.tar,config.tar,docker-compose.yml"
-          target: "/home/pi/deployment"
+      - name: Save tar on Pi
+        run: |
+          for module in smarthome config discovery gateway; do
+           mv $module.tar ../../../../Smarthome/$module.tar
+          done
+          mv docker-compose.yml ../../../../Smarthome/docker-compose.yml
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.PI_HOST }}
-          username: ${{ secrets.PI_USER }}
-          key: ${{ secrets.PI_SSH_KEY }}
-          script: |
-            cd /home/pi/deployment
-            docker load -i smarthome.tar
-            docker load -i gateway.tar
-            docker load -i discovery.tar
-            docker load -i config.tar
-            docker compose down
-            docker compose up -d --remove-orphans
+      - name: extract images
+        run: |
+          cd ../../../../Smarthome
+          for module in smarthome config discovery gateway; do
+           docker load -i $module.tar
+          done
+
+      - name: Start Docker compose project
+        run: |
+          docker compose up -d --remove-orphans
 
