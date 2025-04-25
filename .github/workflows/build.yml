@@ -13,6 +13,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      #TODO: Secret handling has to be changed! Not safe. Secrets should not be part of the image itself!!!
       - name: Copy secrets
         run: |
           tree
@@ -32,4 +33,29 @@ jobs:
             docker save $module:latest -o ../$module.tar
             cd ..
           done
+          
+
+      - name: Copy images to Raspberry Pi
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          source: "smarthome.tar,gateway.tar,discovery.tar,config.tar,docker-compose.yml"
+          target: "/home/pi/deployment"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          script: |
+            cd /home/pi/deployment
+            docker load -i smarthome.tar
+            docker load -i gateway.tar
+            docker load -i discovery.tar
+            docker load -i config.tar
+            docker compose down
+            docker compose up -d --remove-orphans
 
