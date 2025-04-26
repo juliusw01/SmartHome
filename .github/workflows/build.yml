@@ -44,7 +44,7 @@ jobs:
             mkdir ../../../../Smarthome/application-config
           fi
           for file in smarthome discovery gateway; do
-           mv $file.properties ../../../../Smarthome/application-config/$file.properties
+           mv application-config/$file.properties ../../../../Smarthome/application-config/$file.properties
           done
 
       - name: extract images
