@@ -40,6 +40,7 @@ jobs:
            mv $module.tar ../../../../Smarthome/$module.tar
           done
           mv docker-compose.yml ../../../../Smarthome/docker-compose.yml
+          mv application-config ../../../../Smarthome/application-config
 
       - name: extract images
         run: |
