@@ -57,5 +57,6 @@ jobs:
 
       - name: Start Docker compose project
         run: |
+          cd ../../../../Smarthome
           docker compose up -d --remove-orphans
 
