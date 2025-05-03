@@ -5,8 +5,8 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - config_server
-    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh config_server:8081 -- java -jar app.jar"]
+      - config-server
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh config-server:8081 -- java -jar app.jar"]
     restart: on-failure
   config-server:
     image: config
@@ -23,9 +23,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - config_server
-      - service_discovery
-    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh service_discovery:8082 -- java -jar app.jar"]
+      - config-server
+      - service-discovery
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh service-discovery:8082 -- java -jar app.jar"]
     restart: on-failure
   livisi-smarthome-interface:
     image: smarthome
@@ -34,7 +34,7 @@ services:
     ports:
       - "8008:8008"
     depends_on:
-      - config_server
-      - service_discovery
-      - api_gateway
-    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh api_gateway:8080 -- java -jar app.jar"]
+      - config-server
+      - service-discovery
+      - api-gateway
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh api-gateway:8080 -- java -jar app.jar"]
