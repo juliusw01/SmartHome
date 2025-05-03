@@ -2,10 +2,14 @@ package com.katzenklappe.smartHome.controller;
 
 
 import ch.qos.logback.classic.Logger;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.katzenklappe.smartHome.misc.ConnectSH;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +25,7 @@ import java.net.UnknownHostException;
 public class LightController {
     //private final String baseURL = "http://192.168.178.73:8080";
     private final String baseURL = "http://" + ConnectSH.findConection() + ":8080";
-    //TODO: the ip address can only be found dynamically when running in local (not e.g. docker)
+    //TODO: the ip address can only be found dynamically when running in local (not e.g. docker) --> partially done. Set DNS of Docker Container as Router. Maybe there is a better way?
 
     private AuthController bearer;
 
@@ -77,6 +81,26 @@ public class LightController {
         return switchState(reqBody);
     }
 
+    @PostMapping("/switchAll")
+    public ResponseEntity<Object> switchAllLights(){
+        String allDevices = getAllDevices().toString();
+        ResponseEntity<String> response;
+        try {
+            JSONArray jsonArray = new JSONArray(allDevices);
+            for( int i = 0; i < jsonArray.length(); i++ ) {
+                JSONObject obj = jsonArray.getJSONObject(i);
+                String type = obj.getString("type");
+                if (type.equals("PSS")) {
+                    String id = obj.getString("id");
+                    return turnLightOn(id);
+                }
+            }
+        }catch(JSONException e){
+            System.out.println("Error getting lights from JSONArray");
+        }
+        return ResponseEntity.status(500).body("No light objects found");
+    }
+
     public boolean getIsOn(String deviceId){
         String response = getState(deviceId).toString();
 
@@ -99,9 +123,9 @@ public class LightController {
                     return true;
                 }
             }
-        } catch (Exception e) {
-        System.out.println("Fehler beim Parsen des JSON: " + e.getMessage());
-    }
+        } catch (JsonProcessingException e) {
+            System.out.println("Error parsing JSON: " + e.getMessage());
+        }
         return false;
     }
 
