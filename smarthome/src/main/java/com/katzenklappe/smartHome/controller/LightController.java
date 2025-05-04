@@ -84,16 +84,19 @@ public class LightController {
     @PostMapping("/switchAll")
     public ResponseEntity<Object> switchAllLights(){
         String allDevices = getAllDevices().toString();
-        ResponseEntity<String> response;
         try {
             JSONArray jsonArray = new JSONArray(allDevices);
             for( int i = 0; i < jsonArray.length(); i++ ) {
                 JSONObject obj = jsonArray.getJSONObject(i);
+                log.info("Current Object: " + obj.toString());
                 String type = obj.getString("type");
+                log.info("Type: " + type);
                 if (type.equals("PSS")) {
                     String id = obj.getString("id");
+                    log.info("Light:" + id);
                     return turnLightOn(id);
                 }
+                log.info("=========================================");
             }
         }catch(JSONException e){
             System.out.println("Error getting lights from JSONArray");
