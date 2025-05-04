@@ -83,7 +83,8 @@ public class LightController {
 
     @PostMapping("/switchAll")
     public ResponseEntity<Object> switchAllLights(){
-        String allDevices = getAllDevices().toString();
+        String response = getAllDevices().toString();
+        String allDevices = response.substring(response.indexOf('['), response.lastIndexOf(',')-1);
         //to be removed
         System.out.println(allDevices);
         try {
