@@ -84,6 +84,8 @@ public class LightController {
     @PostMapping("/switchAll")
     public ResponseEntity<Object> switchAllLights(){
         String allDevices = getAllDevices().toString();
+        //to be removed
+        System.out.println(allDevices);
         try {
             JSONArray jsonArray = new JSONArray(allDevices);
             for( int i = 0; i < jsonArray.length(); i++ ) {
@@ -99,7 +101,7 @@ public class LightController {
                 log.info("=========================================");
             }
         }catch(JSONException e){
-            System.out.println("Error getting lights from JSONArray");
+            log.error("Error getting lights from JSONArray: " + e.getMessage());
         }
         return ResponseEntity.status(500).body("No light objects found");
     }
@@ -127,7 +129,7 @@ public class LightController {
                 }
             }
         } catch (JsonProcessingException e) {
-            System.out.println("Error parsing JSON: " + e.getMessage());
+            log.error("Error parsing JSON: " + e.getMessage());
         }
         return false;
     }
@@ -177,10 +179,10 @@ public class LightController {
 
                 return capabilityId;
             } else {
-                System.out.println("Capabilities nicht gefunden oder kein Array.");
+                log.warn("Capabilities not found or not an array.");
             }
         } catch (Exception e) {
-            System.out.println("Fehler beim Parsen des JSON: " + e.getMessage());
+            log.error("Error parsing JSON: " + e.getMessage());
         }
         return null;
     }
