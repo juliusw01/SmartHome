@@ -1,0 +1,63 @@
+name: Deploy Multi-Module Docker Setup to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      #TODO: Secret handling has to be changed! Not safe. Secrets should not be part of the image itself!!!
+      - name: Copy secrets
+        run: |
+          tree
+          cd smarthome
+          touch secrets.properties
+          echo "USERNAME=${{ secrets.USERNAME }}" >> secrets.properties
+          echo "PASSWORD=${{ secrets.PASSWORD }}" >> secrets.properties
+          echo "AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}" >> secrets.properties
+          ls -l
+
+      - name: Build images
+        run: |
+          for module in smarthome config discovery gateway; do
+            cd $module
+            mvn clean package -DskipTests
+            docker build -t $module:latest .
+            docker save $module:latest -o ../$module.tar
+            cd ..
+          done
+
+      - name: Save tar on Pi
+        run: |
+          for module in smarthome config discovery gateway; do
+           mv $module.tar ../../../../Smarthome/$module.tar
+          done
+          mv docker-compose.yml ../../../../Smarthome/docker-compose.yml
+          if [ ! -d ../../../../Smarthome/application-config ]; then
+            mkdir ../../../../Smarthome/application-config
+          fi
+          for file in smarthome discovery gateway; do
+           chmod 777 application-config/$file.properties
+           sudo mv application-config/$file.properties ../../../../Smarthome/application-config/$file.properties
+          done
+
+      - name: extract images
+        run: |
+          cd ../../../../Smarthome
+          for module in smarthome config discovery gateway; do
+           docker load -i $module.tar
+          done
+
+      - name: Start Docker compose project
+        run: |
+          cd ../../../../Smarthome
+          docker compose down
+          docker compose up -d --remove-orphans
+

@@ -1,8 +1,40 @@
 version: "3"
 services:
-  livisi_smarthome_interface:
+  service-discovery:
+    image: discovery
+    ports:
+      - "8082:8082"
+    depends_on:
+      - config-server
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh config-server:8081 -- java -jar app.jar"]
+    restart: on-failure
+  config-server:
+    image: config
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./application-config:/config:rw
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config
+    restart: on-failure
+  api-gateway:
+    image: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - config-server
+      - service-discovery
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh service-discovery:8082 -- java -jar app.jar"]
+    restart: on-failure
+  livisi-smarthome-interface:
     image: smarthome
     dns:
       - 192.168.178.1
     ports:
-      - 8080:8080
+      - "8008:8008"
+    depends_on:
+      - config-server
+      - service-discovery
+      - api-gateway
+    entrypoint: ["/bin/sh", "-c", "./wait-for-it.sh api-gateway:8080 -- java -jar app.jar"]
